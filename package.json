@@ -1,7 +1,7 @@
 {
-  "name": "ws_client",
+  "name": "midi2websockets",
   "version": "1.0.0",
-  "description": "midi to websocket",
+  "description": "take local midi messages (like note on, note off) and send out to remote server via websockets",
   "main": "client.js",
   "bin": "client.js",
   "dependencies": {
@@ -17,5 +17,5 @@
     "start": "node client.js"
   },
   "author": "",
-  "license": "ISC"
+  "license": "MIT"
 }

@@ -16,6 +16,7 @@ for (let i = 0; i < midiInput.getPortCount(); i++) {
 	console.log("["+ i + "] " + midiInput.getPortName(i));
 }
 
+
 //prompt.get(schema, function (err, result) {
 rl.question('What port would you like to use? ', (answer) => {
 	const ws = new WebSocket('ws://45.55.43.77:3902');  

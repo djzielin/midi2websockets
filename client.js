@@ -18,14 +18,12 @@ for (let i = 0; i < midiInput.getPortCount(); i++) {
 
 //prompt.get(schema, function (err, result) {
 rl.question('What port would you like to use? ', (answer) => {
-	try {
-		const ws = new WebSocket('ws://45.55.43.77:3902');  //TODO how to capture error properly!!!
-	}
-	catch (err) {
-		console.log("ERROR: couldn't connect to server - " + err);
-		input.closePort();
+	const ws = new WebSocket('ws://45.55.43.77:3902');  
+	ws.on('error', error => {
+		console.log("ERROR: couldn't connect to remote server.");
+		console.log(error);
 		process.exit();
-	}
+	});
 
 	midiInput.openPort(parseInt(answer));
 	midiInput.ignoreTypes(true, true, true); 	// Order: (Sysex, Timing, Active Sensing)

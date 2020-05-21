@@ -12,6 +12,8 @@ const rl = readline.createInterface({
   });
 
 console.clear();
+let weAreConnected=false;
+
 
 console.log("midi ports available: ");
 for (let i = 0; i < midiInput.getPortCount(); i++) {
@@ -28,15 +30,23 @@ rl.question('What port would you like to use? ', (answer) => {
 
 		if ((command & 0xF0) === 0x90) { // note on message
 			console.log(`NoteOn: ${message}`);
-			if(ws){
-				ws.send("[" + note + "," + vel + "]");
+			if(ws && weAreConnected){
+				try{
+					ws.send("[" + note + "," + vel + "]");
+				} catch(err){
+					console.log("can't send note right now: we don't seem to be connected");
+				}
 			}
 		}
 		if ((command & 0xF0) === 0x80) { // note off message
 			console.log(`NoteOff: ${message}`);
 			vel = 0;
-			if(ws){
-				ws.send("[" + note + "," + vel + "]");
+			if(ws && weAreConnected){
+				try{
+					ws.send("[" + note + "," + vel + "]");
+				}catch(err){
+					console.log("can't send note right now: we don't seem to be connected");
+				}
 			}
 		}
 	});
@@ -55,15 +65,21 @@ function connectToServer() {
 
 	ws.on('error', (error) => {
 		console.log("ERROR: couldn't connect to remote server.");
+		weAreConnected=false;
 		ws = null;
 	});
 
 	ws.on('close', (code, reason) => {
 		console.log("CLOSE: connection closed");
+		weAreConnected=false;
 		ws = null;
 	});
 
-	ws.on('open', ()=>{ console.log("Success! we are connect to server!"); });
+	ws.on('open', ()=>
+	{ 
+		weAreConnected=true;
+		console.log("Success! we are connected to server!"); 
+	});
 }
 
 

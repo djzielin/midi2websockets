@@ -15,7 +15,7 @@ console.clear();
 let weAreConnected=false;
 
 
-console.log("midi ports available: ");
+console.log("midi input (transmit) available: ");
 for (let i = 0; i < midiInput.getPortCount(); i++) {
 	console.log("["+ i + "] " + midiInput.getPortName(i));
 }
@@ -27,6 +27,7 @@ rl.question('What port would you like to use? ', (answer) => {
 		command = message[0];
 		note = message[1];
 		vel = message[2];
+		//console.log(`Message: ${message}`);
 
 		if ((command & 0xF0) === 0x90) { // note on message
 			console.log(`NoteOn: ${message}`);
@@ -48,6 +49,9 @@ rl.question('What port would you like to use? ', (answer) => {
 					console.log("can't send note right now: we don't seem to be connected");
 				}
 			}
+		}
+		if ((command & 0xF0) === 0xB0) { // note off message
+			console.log(`CC: ${message}`);
 		}
 	});
 

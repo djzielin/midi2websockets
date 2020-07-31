@@ -20,8 +20,16 @@ for (let i = 0; i < midiInput.getPortCount(); i++) {
 	console.log("["+ i + "] " + midiInput.getPortName(i));
 }
 
+var isGuitar=false;
+
 rl.question('What port would you like to use? ', (answer) => {
-	midiInput.openPort(parseInt(answer));
+	var userSelection=parseInt(answer);
+	midiInput.openPort(userSelection);
+	var portName=midiInput.getPortName(userSelection);
+	if(portName.includes("Guitar")){
+		isGuitar=true;
+	}
+
 	midiInput.ignoreTypes(true, true, true); 	// Order: (Sysex, Timing, Active Sensing)
 	midiInput.on('message', (deltaTime, message) => {
 		command = message[0];
@@ -29,29 +37,48 @@ rl.question('What port would you like to use? ', (answer) => {
 		vel = message[2];
 		//console.log(`Message: ${message}`);
 
-		if ((command & 0xF0) === 0x90) { // note on message
-			console.log(`NoteOn: ${message}`);
-			if(ws && weAreConnected){
-				try{
-					ws.send("[" + note + "," + vel + "]");
-				} catch(err){
-					console.log("can't send note right now: we don't seem to be connected");
+		let channel = command & 0x0F;
+		if (!isGuitar || (isGuitar && channel > 0)) {
+			
+			if (isGuitar) {
+				channel -= 6; //get in range 0-5
+			}
+
+			if ((command & 0xF0) === 0x90) { // note on message
+				let altspaceMessage="[" + note + "," + vel + "]";
+				if(isGuitar){
+					altspaceMessage="[" + note + "," + vel + "," + channel + "]";
+				}
+				console.log(`NoteOn: ${altspaceMessage}`);
+
+				if (ws && weAreConnected) {
+					try {
+						ws.send("[" + note + "," + vel + "," + channel + "]");
+					} catch (err) {
+						console.log("can't send note right now: we don't seem to be connected");
+					}
 				}
 			}
-		}
-		if ((command & 0xF0) === 0x80) { // note off message
-			console.log(`NoteOff: ${message}`);
-			vel = 0;
-			if(ws && weAreConnected){
-				try{
-					ws.send("[" + note + "," + vel + "]");
-				}catch(err){
-					console.log("can't send note right now: we don't seem to be connected");
+
+			if ((command & 0xF0) === 0x80) { // note off message				
+				vel = 0;
+				let altspaceMessage="[" + note + "," + vel + "]";
+				if(isGuitar){
+					altspaceMessage="[" + note + "," + vel + "," + channel + "]";
+				}
+				console.log(`NoteOff: ${altspaceMessage}`);
+
+				if (ws && weAreConnected) {
+					try {
+						ws.send("[" + note + "," + vel + "," + channel + "]");
+					} catch (err) {
+						console.log("can't send note right now: we don't seem to be connected");
+					}
 				}
 			}
-		}
-		if ((command & 0xF0) === 0xB0) { // note off message
-			console.log(`CC: ${message}`);
+			if ((command & 0xF0) === 0xB0) { // note CC
+				console.log(`CC: ${message}`);
+			}
 		}
 	});
 

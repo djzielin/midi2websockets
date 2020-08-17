@@ -92,7 +92,8 @@ rl.question('What port would you like to use? ', (answer) => {
 });
 
 function connectToServer() {
-	ws = new WebSocket('ws://45.55.43.77:3902');
+	ws = new WebSocket('ws://199.19.73.131:3902');
+	//ws = new WebSocket('ws://45.55.43.77:3902');
 
 	ws.on('error', (error) => {
 		console.log("ERROR: couldn't connect to remote server.");
